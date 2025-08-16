@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, type Profile } from '../lib/supabase';
 import { User } from '@supabase/supabase-js';
+import { SupabaseOptimized } from '../lib/supabaseOptimized';
 
 interface AuthContextType {
   user: User | null;
@@ -10,6 +11,7 @@ interface AuthContextType {
   verifyOTP: (phone: string, token: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (data: Partial<Profile>) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
     // Get initial session
@@ -53,6 +56,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loadProfile = async (userId: string) => {
+    if (profileLoading) return; // Éviter les requêtes multiples
+    
+    setProfileLoading(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -71,12 +77,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         setProfile(data);
+        
+        // Invalider le cache des stats quand le profil change
+        SupabaseOptimized.invalidateCache('stats_');
       }
     } catch (error) {
       console.error('Error loading profile:', error);
       setProfile(null);
     } finally {
       setLoading(false);
+      setProfileLoading(false);
     }
   };
 
@@ -101,6 +111,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+    
+    // Nettoyer le cache à la déconnexion
+    SupabaseOptimized.invalidateCache();
   };
 
   const updateProfile = async (data: Partial<Profile>) => {
@@ -117,6 +130,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await loadProfile(profile.user_id);
   };
 
+  const refreshProfile = async () => {
+    if (user) {
+      await loadProfile(user.id);
+    }
+  };
   const value = {
     user,
     profile,
@@ -125,6 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     verifyOTP,
     signOut,
     updateProfile,
+    refreshProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

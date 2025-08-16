@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ErrorBoundary } from './components/UI/ErrorBoundary';
 import { LandingPage } from './components/LandingPage';
 import { Layout } from './components/Layout';
 import { LoginForm } from './components/Auth/LoginForm';
@@ -15,6 +16,7 @@ import { NotificationCenter } from './components/Notifications/NotificationCente
 import { CampaignValidation } from './components/Admin/CampaignValidation';
 import { ProofValidation } from './components/Admin/ProofValidation';
 import { UserManagement } from './components/Admin/UserManagement';
+import { LoadingSpinner } from './components/UI/LoadingSpinner';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth();
@@ -23,7 +25,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <LoadingSpinner size="lg" className="mx-auto mb-4" />
           <p className="text-gray-600">Chargement...</p>
         </div>
       </div>
@@ -65,100 +67,102 @@ function DashboardRouter() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/landing" element={<LandingPage />} />
-          <Route path="/login" element={<LoginRoute />} />
-          <Route
-            path="/"
-            element={
-              <Navigate to="/landing" replace />
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardRouter />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/campaigns"
-            element={
-              <ProtectedRoute>
-                <div>Campaigns Page (Coming Soon)</div>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/campaigns/new"
-            element={
-              <ProtectedRoute>
-                <div>New Campaign Page (Coming Soon)</div>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/available-campaigns"
-            element={
-              <ProtectedRoute>
-                <AvailableCampaigns />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-applications"
-            element={
-              <ProtectedRoute>
-                <MyApplications />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/history"
-            element={
-              <ProtectedRoute>
-                <BroadcasterHistory />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <ProtectedRoute>
-                <NotificationCenter />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/wallet"
-            element={
-              <ProtectedRoute>
-                <div>Wallet Page (Coming Soon)</div>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/referrals"
-            element={
-              <ProtectedRoute>
-                <div>Referrals Page (Coming Soon)</div>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute>
-                <AdminRoutes />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/landing" element={<LandingPage />} />
+            <Route path="/login" element={<LoginRoute />} />
+            <Route
+              path="/"
+              element={
+                <Navigate to="/landing" replace />
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardRouter />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/campaigns"
+              element={
+                <ProtectedRoute>
+                  <div>Campaigns Page (Coming Soon)</div>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/campaigns/new"
+              element={
+                <ProtectedRoute>
+                  <div>New Campaign Page (Coming Soon)</div>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/available-campaigns"
+              element={
+                <ProtectedRoute>
+                  <AvailableCampaigns />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-applications"
+              element={
+                <ProtectedRoute>
+                  <MyApplications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <BroadcasterHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <NotificationCenter />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/wallet"
+              element={
+                <ProtectedRoute>
+                  <div>Wallet Page (Coming Soon)</div>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/referrals"
+              element={
+                <ProtectedRoute>
+                  <div>Referrals Page (Coming Soon)</div>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/*"
+              element={
+                <ProtectedRoute>
+                  <AdminRoutes />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
@@ -168,7 +172,7 @@ function LoginRoute() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -185,9 +189,9 @@ function LoginRoute() {
 }
 
 function AdminRoutes() {
-  const location = useLocation();
+  const { pathname } = useLocation();
   
-  switch (location.pathname) {
+  switch (pathname) {
     case '/admin/campaigns':
       return <CampaignValidation />;
     case '/admin/proofs':
