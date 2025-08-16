@@ -60,10 +60,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId)
         .single();
 
-      if (error) throw error;
-      setProfile(data);
+      if (error) {
+        // Si le profil n'existe pas encore, ce n'est pas une erreur critique
+        if (error.code === 'PGRST116') {
+          console.log('Profile not found for user:', userId);
+          setProfile(null);
+        } else {
+          console.error('Error loading profile:', error);
+          throw error;
+        }
+      } else {
+        setProfile(data);
+      }
     } catch (error) {
       console.error('Error loading profile:', error);
+      setProfile(null);
     } finally {
       setLoading(false);
     }

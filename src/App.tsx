@@ -14,7 +14,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
       </div>
     );
   }
@@ -41,9 +44,19 @@ function DashboardRouter() {
     case 'broadcaster':
       return <BroadcasterDashboard />;
     case 'admin':
-      return <div>Admin Dashboard (Coming Soon)</div>;
+      return (
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Admin Dashboard</h2>
+          <p className="text-gray-600">Fonctionnalités d'administration en cours de développement</p>
+        </div>
+      );
     default:
-      return <div>Unknown role</div>;
+      return (
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Erreur</h2>
+          <p className="text-gray-600">Rôle utilisateur non reconnu: {profile.role}</p>
+        </div>
+      );
   }
 }
 

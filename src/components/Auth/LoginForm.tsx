@@ -17,9 +17,16 @@ export function LoginForm() {
     setError('');
 
     try {
-      await signInWithOTP(phone);
+      // Valider le format du numéro de téléphone
+      const cleanPhone = phone.replace(/\s/g, '');
+      if (!cleanPhone.startsWith('+')) {
+        throw new Error('Le numéro doit commencer par un indicatif pays (ex: +33)');
+      }
+      
+      await signInWithOTP(cleanPhone);
       setStep('otp');
     } catch (error: any) {
+      console.error('OTP send error:', error);
       setError(error.message || 'Erreur lors de l\'envoi du code');
     } finally {
       setLoading(false);
@@ -32,8 +39,10 @@ export function LoginForm() {
     setError('');
 
     try {
-      await verifyOTP(phone, otp);
+      const cleanPhone = phone.replace(/\s/g, '');
+      await verifyOTP(cleanPhone, otp);
     } catch (error: any) {
+      console.error('OTP verify error:', error);
       setError(error.message || 'Code invalide');
     } finally {
       setLoading(false);

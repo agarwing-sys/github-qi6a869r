@@ -69,14 +69,20 @@ export function RoleSelection() {
         is_verified: false,
       };
 
+      console.log('Creating profile with data:', profileData);
+
       const { error: profileError } = await supabase
         .from('profiles')
         .insert([profileData]);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        throw profileError;
+      }
 
       // Traiter le parrainage si applicable
       if (formData.referred_by) {
+        console.log('Processing referral:', formData.referred_by);
         const { data: referrer } = await supabase
           .from('profiles')
           .select('id')
@@ -84,18 +90,27 @@ export function RoleSelection() {
           .single();
 
         if (referrer) {
-          await supabase
+          const { error: referralError } = await supabase
             .from('referrals')
             .insert([{
               referrer_id: referrer.id,
               referred_id: profileData.user_id,
               referral_code: formData.referred_by,
             }]);
+          
+          if (referralError) {
+            console.error('Referral creation error:', referralError);
+            // Ne pas faire échouer l'inscription pour une erreur de parrainage
+          }
+        } else {
+          console.warn('Referral code not found:', formData.referred_by);
         }
       }
 
       // Recharger le profil
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error: any) {
       console.error('Error creating profile:', error);
       setError(error.message || 'Erreur lors de la création du profil');

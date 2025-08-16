@@ -112,6 +112,19 @@ export function BroadcasterDashboard() {
     if (!profile) return;
 
     try {
+      // Vérifier si l'utilisateur a déjà candidaté
+      const { data: existingApplication } = await supabase
+        .from('campaign_applications')
+        .select('id')
+        .eq('campaign_id', campaignId)
+        .eq('broadcaster_id', profile.id)
+        .single();
+
+      if (existingApplication) {
+        alert('Vous avez déjà candidaté à cette campagne');
+        return;
+      }
+
       const { error } = await supabase
         .from('campaign_applications')
         .insert([{
@@ -122,6 +135,7 @@ export function BroadcasterDashboard() {
 
       if (error) throw error;
 
+      alert('Candidature envoyée avec succès !');
       // Recharger les données
       await loadDashboardData();
     } catch (error: any) {
