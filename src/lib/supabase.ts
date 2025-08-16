@@ -24,12 +24,33 @@ export type Profile = {
   gender?: 'male' | 'female' | 'other';
   language: string;
   interests?: string[];
+  company_info?: {
+    company_name?: string;
+    business_sector?: string;
+    company_address?: string;
+    contact_person_email?: string;
+    tax_id?: string;
+  };
   is_active: boolean;
   is_verified: boolean;
   referral_code: string;
   referred_by?: string;
   created_at: string;
   updated_at: string;
+};
+
+export type Notification = {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  message: string;
+  data?: any;
+  is_read: boolean;
+  sent_via_email: boolean;
+  sent_via_sms: boolean;
+  created_at: string;
+  read_at?: string;
 };
 
 export type Campaign = {
@@ -65,6 +86,7 @@ export type CampaignApplication = {
   applied_at: string;
   accepted_at?: string;
   completed_at?: string;
+  proof_uploaded?: boolean;
 };
 
 export type Proof = {

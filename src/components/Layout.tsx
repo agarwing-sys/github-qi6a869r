@@ -1,7 +1,8 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Menu, Wallet, Bell, User, LogOut } from 'lucide-react';
+import { Menu, Wallet, Bell, User, LogOut, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { NotificationBell } from './Notifications/NotificationBell';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -23,6 +24,7 @@ export function Layout({ children }: LayoutProps) {
           { name: 'Créer Campagne', href: '/campaigns/new', icon: '➕' },
           { name: 'Mon Portefeuille', href: '/wallet', icon: '💰' },
           { name: 'Parrainage', href: '/referrals', icon: '🎁' },
+          { name: 'Notifications', href: '/notifications', icon: '🔔' },
         ];
       case 'broadcaster':
         return [
@@ -31,14 +33,17 @@ export function Layout({ children }: LayoutProps) {
           { name: 'Mes Applications', href: '/my-applications', icon: '📝' },
           { name: 'Mon Portefeuille', href: '/wallet', icon: '💰' },
           { name: 'Parrainage', href: '/referrals', icon: '🎁' },
+          { name: 'Historique', href: '/history', icon: '📊' },
+          { name: 'Notifications', href: '/notifications', icon: '🔔' },
         ];
       case 'admin':
         return [
-          { name: 'Analytics', href: '/admin/analytics', icon: '📈' },
+          { name: 'Tableau de bord', href: '/dashboard', icon: '📊' },
           { name: 'Utilisateurs', href: '/admin/users', icon: '👥' },
           { name: 'Campagnes', href: '/admin/campaigns', icon: '🎯' },
           { name: 'Preuves', href: '/admin/proofs', icon: '✅' },
           { name: 'Paiements', href: '/admin/payments', icon: '💳' },
+          { name: 'Analytics', href: '/admin/analytics', icon: '📈' },
           { name: 'Paramètres', href: '/admin/settings', icon: '⚙️' },
         ];
       default:
@@ -72,10 +77,7 @@ export function Layout({ children }: LayoutProps) {
               <h1 className="text-xl font-bold text-blue-600">Whatspay</h1>
             </div>
             <div className="flex items-center space-x-2">
-              <button className="p-2 rounded-lg hover:bg-gray-100 relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
-              </button>
+              <NotificationBell />
               <Link to="/profile" className="p-2 rounded-lg hover:bg-gray-100">
                 <User className="w-5 h-5" />
               </Link>
@@ -145,6 +147,10 @@ export function Layout({ children }: LayoutProps) {
           </nav>
 
           <div className="absolute bottom-4 left-4 right-4">
+            <div className="mb-4">
+              <NotificationBell />
+            </div>
+            
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">

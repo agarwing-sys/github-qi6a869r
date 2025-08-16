@@ -4,7 +4,8 @@ Une plateforme complète qui connecte les annonceurs avec les diffuseurs pour la
 
 ## 🚀 Fonctionnalités
 
-### Pour les Annonceurs
+### Pour les Annonceurs (Entreprises)
+- ✅ Inscription avec informations d'entreprise
 - ✅ Création et gestion de campagnes publicitaires
 - ✅ Ciblage précis (âge, genre, ville, intérêts)
 - ✅ Upload de médias (images/vidéos)
@@ -12,12 +13,15 @@ Une plateforme complète qui connecte les annonceurs avec les diffuseurs pour la
 - ✅ Système de paiement intégré
 - ✅ Analytics détaillés
 
-### Pour les Diffuseurs
+### Pour les Diffuseurs (Particuliers)
+- ✅ Inscription simplifiée avec profil personnel
 - ✅ Navigation des campagnes disponibles
 - ✅ Correspondance automatique selon le profil
-- ✅ Upload de preuves de publication
+- ✅ Instructions de publication claires
+- ✅ Upload obligatoire de preuves de publication
 - ✅ Système de gains et retraits
-- ✅ Tableau de bord des performances
+- ✅ Historique des campagnes et gains
+- ✅ Notifications automatiques
 
 ### Fonctionnalités Communes
 - ✅ Authentification par téléphone avec OTP
@@ -25,13 +29,15 @@ Une plateforme complète qui connecte les annonceurs avec les diffuseurs pour la
 - ✅ Portefeuille intégré avec historique des transactions
 - ✅ Interface responsive mobile-first
 - ✅ Support multilingue (français par défaut)
+- ✅ Notifications automatiques (email/SMS)
 
-### Administration
-- ✅ Gestion des utilisateurs
-- ✅ Validation des campagnes
-- ✅ Validation des preuves de publication
+### Administration (Backoffice)
+- ✅ Validation des campagnes avant diffusion
+- ✅ Modération des preuves de publication
+- ✅ Gestion des utilisateurs (bloquer/suspendre/supprimer)
+- ✅ Surveillance des flux financiers
 - ✅ Analytics de la plateforme
-- ✅ Gestion des paiements
+- ✅ Gestion des paiements et commissions
 - ✅ Paramètres de la plateforme
 
 ## 🛠️ Stack Technique
@@ -40,6 +46,7 @@ Une plateforme complète qui connecte les annonceurs avec les diffuseurs pour la
 - **Backend**: Supabase (PostgreSQL + Auth + Storage)
 - **Authentification**: OTP par SMS via Supabase Auth
 - **Base de données**: PostgreSQL avec Row Level Security (RLS)
+- **Notifications**: Système intégré avec support email/SMS
 - **Paiements**: Intégration prête pour passerelles de paiement mobile
 
 ## 📋 Prérequis
@@ -74,8 +81,11 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 4. **Initialiser la base de données**
-- Exécuter le script SQL dans `supabase/migrations/create_whatspay_schema.sql` dans l'éditeur SQL de Supabase
-- Cela créera toutes les tables, politiques RLS, et données initiales
+- Aller dans l'éditeur SQL de Supabase
+- Exécuter les migrations dans l'ordre :
+  1. `supabase/migrations/20250815115441_bright_temple.sql`
+  2. `supabase/migrations/20250815162809_empty_rice.sql`
+  3. `supabase/migrations/20250816113858_young_summit.sql`
 
 5. **Configuration de l'authentification Supabase**
 - Dans les paramètres d'authentification Supabase :
@@ -89,6 +99,57 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 npm run dev
 ```
 
+## 👨‍💼 Accès Administration
+
+### Créer un compte administrateur
+
+1. **Méthode 1: Via l'interface (Recommandée)**
+   - Inscrivez-vous normalement via l'application
+   - Connectez-vous à votre base de données Supabase
+   - Exécutez cette requête SQL en remplaçant `PHONE_NUMBER` par votre numéro :
+   ```sql
+   UPDATE profiles 
+   SET role = 'admin' 
+   WHERE phone_number = '+33612345678';
+   ```
+
+2. **Méthode 2: Création directe en base**
+   ```sql
+   -- Remplacez les valeurs par vos informations
+   INSERT INTO auth.users (id, phone, phone_confirmed_at, created_at, updated_at)
+   VALUES (
+     gen_random_uuid(),
+     '+33612345678',
+     now(),
+     now(),
+     now()
+   );
+   
+   -- Puis créer le profil admin
+   INSERT INTO profiles (user_id, phone_number, full_name, role)
+   VALUES (
+     (SELECT id FROM auth.users WHERE phone = '+33612345678'),
+     '+33612345678',
+     'Administrateur',
+     'admin'
+   );
+   ```
+
+### Accéder au panel admin
+
+1. Connectez-vous avec votre compte administrateur
+2. Vous serez automatiquement redirigé vers le dashboard admin
+3. URL directe : `https://votre-domaine.com/dashboard` (avec un compte admin)
+
+### Fonctionnalités admin disponibles
+
+- **Analytics** : Vue d'ensemble de la plateforme
+- **Utilisateurs** : Gestion des comptes (bloquer/débloquer/supprimer)
+- **Campagnes** : Validation et modération des campagnes
+- **Preuves** : Validation des preuves de publication
+- **Paiements** : Gestion des transactions et commissions
+- **Paramètres** : Configuration de la plateforme
+
 ## 🗃️ Structure de la Base de Données
 
 ### Tables Principales
@@ -100,6 +161,7 @@ npm run dev
 - `transactions` - Historique des transactions
 - `referrals` - Système de parrainage
 - `platform_settings` - Configuration de la plateforme
+- `notifications` - Système de notifications
 
 ### Sécurité
 - Row Level Security (RLS) activé sur toutes les tables
@@ -109,34 +171,60 @@ npm run dev
 
 ## 👥 Rôles Utilisateurs
 
-### Annonceur (Advertiser)
+### Annonceur (Advertiser) - Entreprises
+- Inscription avec informations d'entreprise complètes
 - Créer et gérer des campagnes
 - Alimenter son portefeuille
 - Voir les analytics de ses campagnes
 - Gérer son système de parrainage
 
-### Diffuseur (Broadcaster)
+### Diffuseur (Broadcaster) - Particuliers
+- Inscription simplifiée avec profil personnel
 - Voir les campagnes disponibles correspondant à son profil
 - Candidater aux campagnes
-- Uploader des preuves de publication
+- Recevoir des instructions de publication
+- Uploader des preuves de publication obligatoires
 - Retirer ses gains
+- Historique complet des gains
 
 ### Administrateur (Admin)
 - Accès complet à toutes les fonctionnalités
-- Validation des campagnes et preuves
-- Gestion des utilisateurs
+- Validation des campagnes avant diffusion
+- Modération des preuves de publication
+- Gestion des utilisateurs (bloquer/suspendre/supprimer)
+- Surveillance des flux financiers
 - Configuration de la plateforme
 
-## 🎯 Workflow de Campagne
+## 🎯 Workflow Complet de Campagne
 
-1. **Création** - L'annonceur crée une campagne avec ciblage
-2. **Validation** - L'admin approuve la campagne
+1. **Création** - L'annonceur (entreprise) crée une campagne avec ciblage
+2. **Validation Admin** - L'admin approuve la campagne avant diffusion
 3. **Correspondance** - Le système trouve des diffuseurs éligibles
-4. **Candidature** - Les diffuseurs candidatent aux campagnes
-5. **Acceptation** - L'annonceur accepte les candidatures
-6. **Publication** - Le diffuseur publie et upload la preuve
-7. **Validation** - L'admin valide la preuve
-8. **Paiement** - Le paiement est automatiquement traité
+4. **Notification** - Les diffuseurs reçoivent une notification de nouvelle campagne
+5. **Candidature** - Les diffuseurs candidatent aux campagnes
+6. **Acceptation** - L'annonceur accepte les candidatures
+7. **Instructions** - Le diffuseur reçoit les instructions de publication
+8. **Publication** - Le diffuseur publie selon les guidelines
+9. **Preuve** - Upload obligatoire de screenshot dans les 24h
+10. **Validation** - L'admin valide la preuve (détection de fraude)
+11. **Paiement** - Le paiement est automatiquement traité
+12. **Notifications** - Confirmation de paiement envoyée
+
+## 🔔 Système de Notifications
+
+### Types de notifications automatiques
+- **Nouvelles campagnes disponibles** (diffuseurs)
+- **Rappel de publication** (23h30 après acceptation)
+- **Rappel de preuve** (si pas uploadée)
+- **Validation de campagne** (annonceurs)
+- **Confirmation de paiement** (tous)
+- **Bonus de parrainage** (parrains)
+
+### Canaux de notification
+- Notifications in-app
+- Email (optionnel)
+- SMS (optionnel)
+- WhatsApp API (futur)
 
 ## 💰 Système de Paiement
 
@@ -145,6 +233,7 @@ npm run dev
 - Calcul automatique des commissions
 - Historique complet des transactions
 - Système de retrait sécurisé
+- Surveillance anti-fraude
 
 ## 🎁 Système de Parrainage
 
@@ -166,10 +255,11 @@ npm run dev
 - Rapports exportables
 - Analytics de la plateforme pour les admins
 
-### Système de Notifications
-- Notifications en temps réel pour les actions importantes
-- Alertes email/SMS configurables
-- Historique des notifications
+### Détection de Fraude
+- Validation automatique des preuves
+- Détection d'images dupliquées
+- Analyse des patterns suspects
+- Système de signalement
 
 ## 🛡️ Sécurité et Conformité
 
@@ -178,6 +268,7 @@ npm run dev
 - Audit trail complet
 - Validation stricte des uploads
 - Protection contre la fraude
+- Modération humaine + automatique
 
 ## 🚀 Déploiement
 
@@ -187,6 +278,7 @@ npm run dev
 3. Configurer les domaines personnalisés
 4. Optimiser les index de base de données
 5. Mettre en place la surveillance
+6. Configurer les notifications (SMTP, SMS)
 
 ### Variables d'Environnement Production
 ```env
@@ -197,22 +289,24 @@ VITE_SUPABASE_ANON_KEY=your_production_anon_key
 
 ## 📱 Tests
 
-### Compte de Test
-Pour tester la plateforme :
+### Comptes de Test
 
-1. **Annonceur Test**
+1. **Annonceur Test (Entreprise)**
    - S'inscrire avec un numéro valide
    - Choisir le rôle "Annonceur"
+   - Remplir les informations d'entreprise
    - Créer une campagne test
 
-2. **Diffuseur Test**
+2. **Diffuseur Test (Particulier)**
    - S'inscrire avec un autre numéro
    - Choisir le rôle "Diffuseur"
+   - Remplir le profil personnel
    - Candidater à la campagne
 
 3. **Admin Test**
-   - Créer un profil admin directement en base
+   - Créer un profil admin (voir section Administration)
    - Tester la validation des campagnes et preuves
+   - Gérer les utilisateurs et paramètres
 
 ## 🔧 Configuration Avancée
 
@@ -223,6 +317,8 @@ Modifiables via l'interface admin :
 - Coût par vue par défaut
 - Bonus de parrainage
 - Limites de campagnes
+- Délais de publication
+- Seuils de détection de fraude
 
 ### Intégration Paiements
 Prêt pour l'intégration avec :
@@ -230,12 +326,19 @@ Prêt pour l'intégration avec :
 - Cartes bancaires (Stripe, PayPal)
 - Virements bancaires
 
+### Notifications
+Configuration des canaux :
+- SMTP pour les emails
+- API SMS (Twilio, etc.)
+- WhatsApp Business API (futur)
+
 ## 📞 Support
 
 Pour toute question :
 - Consulter la documentation
 - Vérifier les logs Supabase
 - Tester avec des données de développement
+- Contacter l'équipe technique
 
 ## 🔄 Mises à Jour
 
@@ -244,6 +347,7 @@ La plateforme est conçue pour être facilement extensible :
 - API REST complète
 - Base de données normalisée
 - Code TypeScript typé
+- Système de notifications extensible
 
 ## 🎯 Roadmap
 
@@ -256,3 +360,5 @@ La plateforme est conçue pour être facilement extensible :
 - [ ] Intégration Instagram/TikTok
 - [ ] Campagnes vidéo avancées
 - [ ] Statistiques prédictives
+- [ ] WhatsApp Business API
+- [ ] Détection automatique de fraude par IA

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase, type Campaign, type Wallet, type CampaignApplication } from '../../lib/supabase';
-import { Radio, DollarSign, Clock, CheckCircle, Plus } from 'lucide-react';
+import { Radio, DollarSign, Clock, CheckCircle, Plus, AlertTriangle, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function BroadcasterDashboard() {
@@ -9,6 +9,7 @@ export function BroadcasterDashboard() {
   const [availableCampaigns, setAvailableCampaigns] = useState<Campaign[]>([]);
   const [myApplications, setMyApplications] = useState<(CampaignApplication & { campaign: Campaign })[]>([]);
   const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [urgentActions, setUrgentActions] = useState<any[]>([]);
   const [stats, setStats] = useState({
     availableCampaigns: 0,
     activeCampaigns: 0,
@@ -82,6 +83,18 @@ export function BroadcasterDashboard() {
         
         const activeCampaigns = applicationsData.filter(app => app.status === 'accepted').length;
         const completedCampaigns = applicationsData.filter(app => app.status === 'completed').length;
+        
+        // Identifier les actions urgentes
+        const urgent = applicationsData.filter(app => {
+          if (app.status === 'accepted' && !app.proof_uploaded && app.accepted_at) {
+            const acceptedTime = new Date(app.accepted_at).getTime();
+            const now = new Date().getTime();
+            const hoursElapsed = (now - acceptedTime) / (1000 * 60 * 60);
+            return hoursElapsed > 20; // Plus de 20h depuis l'acceptation
+          }
+          return false;
+        });
+        setUrgentActions(urgent);
         
         setStats(prev => ({
           ...prev,
@@ -164,6 +177,27 @@ export function BroadcasterDashboard() {
 
   return (
     <div className="space-y-8">
+      {/* Alertes urgentes */}
+      {urgentActions.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+          <div className="flex items-center">
+            <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
+            <div className="flex-1">
+              <h3 className="font-medium text-red-800">Action urgente requise</h3>
+              <p className="text-red-700 text-sm mt-1">
+                {urgentActions.length} campagne(s) nécessitent l'upload de preuve avant expiration
+              </p>
+            </div>
+            <Link
+              to="/my-applications"
+              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Voir les campagnes
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
